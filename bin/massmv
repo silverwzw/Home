@@ -1,0 +1,106 @@
+#!/usr/bin/env node
+
+const help_text =
+`Usage:
+${process.argv[1]} [--directory|-d <directory>] [--dry-run] <source file regexp> <target file name>
+${process.argv[1]} [--help|-h]`;
+
+const fs = require("fs");
+
+function assert(v, message) {
+    if (!v) {
+        console.error(message);
+        process.exit(1);
+    }
+}
+
+function init() {
+    const config = {
+        path: process.cwd(),
+        dry_run: false,
+        regexp: undefined,
+        target: undefined
+    };
+    const argv = process.argv.slice(2);
+
+    if (argv.length === 0 || argv.findIndex(a => a === "-h" || a === "--help") !== -1) {
+        console.log(help_text);
+        process.exit(0);
+    }
+
+
+    let index = argv.findIndex(a => a === "--directory" || a === "-d");
+    if (index !== -1) {
+        config.path = argv[index + 1] + "";
+        assert(fs.existsSync(config.path) && fs.lstatSync(config.path).isDirectory(),
+               `"${config.path}" is not a valid directory path`);
+
+        argv.splice(index, 2);
+    }
+
+    config.dry_run = false;
+    index = argv.indexOf("--dry-run");
+    if (index !== -1) {
+        config.dry_run = true;
+        argv.splice(index, 1);
+    }
+
+    if (argv.length !== 2) {
+        console.error("Invalid commandline args\n\n" + help_text);
+        process.exit(1);
+    }
+
+    config.regexp = new RegExp(argv[0]);
+    config.target = argv[1];
+
+    return config;
+}
+
+const config = init();
+const items = fs.readdirSync(config.path)
+    .map(e => ({ source: e, match_result: e.match(config.regexp)}))
+    .map(e => {
+        let result = { source: e.source };
+        if (e.match_result !== null) {
+            result.target = config.target.split("$$").map(s => {
+                for (let i = 1; i < e.match_result.length; ++i) {
+                    s = s.replace("${" + i + "}", e.match_result[i]);
+                }
+                for (let name in e.match_result.groups) {
+                    s = s.replace("${" + name + "}", e.match_result.groups[name]);
+                }
+                return s;
+            }).join("$");
+        }
+        return result;
+    });
+
+const set = new Set();
+items.forEach(i => {
+    const name = i.target === undefined ? i.source : i.target;
+    if (set.has(name)) {
+        console.error(`Possible duplicate file name: ${name}`);
+        process.exit(1);
+    }
+    set.add(name);
+});
+
+const to_be_renamed = items.filter(e => e.target !== undefined);
+
+if (config.dry_run) {
+    console.log(`[DRY_RUN] Renaming ${to_be_renamed.length} items:`);
+}
+
+to_be_renamed.forEach(e => {
+    if (config.dry_run) {
+        console.log(`[DRY_RUN] "${e.source}" >>>>> "${e.target}"`);
+        return;
+    }
+    fs.renameSync(e.source, e.target);
+});
+
+if (config.dry_run) {
+    console.log(`[DRY_RUN] End of program.`);
+}
+
+// vim: set ft=javascript
