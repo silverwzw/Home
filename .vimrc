@@ -38,10 +38,6 @@ function ToggleExtension()
         execute ":e %<.cpp"
     elseif l:extension ==? "cpp"
         execute ":e %<.h"
-    elseif l:extension ==? "js"
-        execute ":e %<.bml"
-    elseif l:extension ==? "bml"
-        execute ":e %<.js"
     endif
 endfunction
 
@@ -85,12 +81,12 @@ set number              "set line number
 set backspace=indent,eol,start
 set visualbell
 set colorcolumn=80
-set hlsearch            "set search result to be high lighted
+set hlsearch            "set search result to be highlighted
 set list listchars=trail:·
 set foldmethod=manual
 set modeline            "enable modeline
 set modelines=20        "set modelines to 20 to skip the copyright notice
-set spell
+" set spell
 set filetype=unix
 
 syntax enable
@@ -104,22 +100,12 @@ syntax enable
 autocmd FileType make,python autocmd BufEnter <buffer> setlocal noexpandtab
 
 " set textwidth = 79, so textwrapping and gq} will work
-autocmd FileType cpp,vim,xsd,python,c,javascript,sh setlocal tw=79
+autocmd FileType cpp,vim,python,c,javascript,sh setlocal tw=79
 " set tab to be hlighlighted
 autocmd FileType cpp,c,javascript setlocal listchars=tab:»·,trail:·
 
-" cmake pattern match
-autocmd BufEnter */blt/*.t.cpp,*/libs-vrs/*.t.cpp,*/libs-rav/*.t.cpp,*/rplus/*.t.cpp,*/tdk/*.t.cpp setlocal makeprg=make\ -C\ cmake.bld/Linux/\ %:t:r
-autocmd FileType cpp autocmd BufEnter */blt/*,*/libs-rav/*,*/rplus/*,*/tdk/* setlocal makeprg=make\ -C\ cmake.bld/Linux/
-
-" schema make
-autocmd FileType xsd autocmd BufEnter <buffer> setlocal makeprg=make\ schema
-
 " remove trailing space on certain filetype
 autocmd FileType cpp,c,javascript,python,xml autocmd BufWrite <buffer> silent! %s/\s\+$//g
-
-" set rules for bml
-autocmd BufEnter *.bml setlocal ft=xml syntax=xml tabstop=2 shiftwidth=2 expandtab
 
 " no absolute linenumber for file has more than 999 line
 " by default apply this line number setting
@@ -137,11 +123,11 @@ autocmd Filetype qf,gitgrep autocmd BufRead,BufNew <buffer> setlocal nonumber no
                            " ==================== "
 
 " Solarized Color Scheme
-set t_Co=256
-set background=dark
-let g:solarized_termcolors=256
-let g:solarized_italic=0
-colorscheme solarized
+" set t_Co=256
+" set background=dark
+" let g:solarized_termcolors=256
+" let g:solarized_italic=0
+" colorscheme solarized
 
 " Primary Color Scheme
 "set t_Co=256
@@ -154,9 +140,6 @@ colorscheme solarized
 
 " Screen not flash on error
 " set vb t_vb=""
-
-" High light all WORKING keyword
-autocmd BufEnter * match CursorLineNr /\<WORKING\>/
 
 " set project specific dictionary
 autocmd BufEnter * call SetSpellFile()
@@ -189,7 +172,7 @@ nmap ,,3 mz/^\\|\s<CR>?\S<CR>my?$\\|\s<CR>/\S<CR>mxv`y"zy
 "  KEY   SHORT                           DESCRIPTION
 " ----- ------- --------------------------------------------------------------
 "  ast   a       add ASSERT(...)
-"  bbf   f       find a Bloomberg type definition (in XML Schema or C++ header)
+"  bbf   f       find a Bloomberg style definition (in XML Schema or C++ header)
 "  bnd   b       bind scrolling
 "  cpp   p       ctrlp plugin for .
 "  cpq   q       ctrlp plugin for ..
@@ -201,7 +184,6 @@ nmap ,,3 mz/^\\|\s<CR>?\S<CR>my?$\\|\s<CR>/\S<CR>mxv`y"zy
 "  mac   m       add macro continuation ('\') at end of line
 "  ope   e       open file specified by text under cursor
 "  pst           toggle paste insert mode
-"  rtn   r       add comment for `return`, `break` and `continue`
 "  tbd   t       add TODO comment block
 "  tgd   dt      delete a HTML/XML tag
 "  tgy   yt      copy a HTML/XML tag
@@ -262,10 +244,6 @@ nmap <leader><leader>e <leader>ope
 " toggle paste insert mode
 nmap <leader>pst :set paste!<CR>
 
-" add return and continue comment
-nmap <leader>rtn 0f;mxa;<ESC>D"zyyA;<ESC>0/\><CR>myD"yyy079R <ESC>"yp"zp`yj0vwhdi// <ESC>gU$$hklv0dji<BS><ESC>`xv0djdd`xPj0i<BS><ESC>:nohl<CR>
-nmap <leader><leader>r <leader>rtn
-
 " add todo delete mark
 nmap <leader>tbd mzO<Esc>0Di// <Esc>a=<Esc>27.iTODO Delete Below<Esc>a=<Esc>30.jo<Esc>0Di// <Esc>a=<Esc>29.iEnd Deletion<Esc>a=<Esc>33.`z
 nmap <leader><leader>t <leader>tbd
@@ -288,9 +266,6 @@ nmap <leader><leader>h <leader>thi
 
 " find file and linenumber
 nmap <F5> /\w\+\(\(.h\)\\|\(.cpp\)\):\d\+<CR>
-
-" BDEFormat plugin
-nmap <F6> :BDEFormat<CR>
 
 " include guards
 nmap <F7> yyPwdwiifndef INCLUDED<Esc>lr_vw~wDjo#endif<Esc>o<Esc>
