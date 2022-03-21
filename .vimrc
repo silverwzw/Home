@@ -13,6 +13,7 @@ Plugin 'MovEaxEsp/bdeformat'
 Plugin 'wesQ3/vim-windowswap'
 Plugin 'Valloric/MatchTagAlways'
 Plugin 'dbakker/vim-projectroot'
+" Plugin 'felixge/vim-nodejs-errorformat'
 
 call vundle#end()
 filetype plugin indent on                " required by Vundle
@@ -55,6 +56,10 @@ function SetSpellFile()
         execute l:cmd
     catch
     endtry
+endfunction
+
+function SetJsErrorFormat()
+    setlocal errorformat=%\\s%#at\ %m\ (%f:%l:%c)
 endfunction
 
 "==============================================================================
@@ -112,6 +117,10 @@ autocmd FileType cpp,c,javascript,python,xml autocmd BufWrite <buffer> silent! %
 autocmd BufRead,BufNew * call SetLineNumber()
 " line number and colorcolumn make no sense in quick fix buffer
 autocmd Filetype qf,gitgrep autocmd BufRead,BufNew <buffer> setlocal nonumber norelativenumber colorcolumn=
+
+autocmd BufRead,BufNew *.js call SetJsErrorFormat()
+autocmd BufRead,BufNew *.js setlocal makeprg=node\ %
+autocmd BufRead,BufNew *.test.js let &makeprg="node " . ProjectRootGuess() . "/node_modules/mocha/bin/mocha %"
 
 " debug settings
 " autocmd Filetype * echom "ft set to " &filetype
